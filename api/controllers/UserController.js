@@ -1,5 +1,6 @@
-const User = require("../models/User");
+const operations = require("../db/operations");
 const currentTime = require("../utils/CurrentTime");
+const User = require("../models/User");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -15,8 +16,8 @@ const generateToken = (id, group) => {
 const register = async (req, res) => {
     const { username, name, password, group } = req.body;
   
-    // check if user exists
-    const user = await User.findByUsername(username);
+    // checa se username existe
+    const user = await operations.findByField("username", username, "users");
     
     if (user.length > 0) {
       res.status(422).json({ errors: ["Usuário já cadastrado !"] });
@@ -43,11 +44,10 @@ const register = async (req, res) => {
       return;
     }
 
-    // registrando usuario no banco
     try {
-        User.insert(newUser);
+        operations.insert(newUser,"users");
     
-        // usuario criada com sucesso
+        // criado com sucesso
         res.status(201).json({newUser, message: "Usuário criado com sucesso!"});
     
       } catch (error) {
@@ -60,7 +60,7 @@ const register = async (req, res) => {
 // login
 const login = async(req,res) => {
     const {username, password} = req.body;
-    const user = await User.findByUsername(username);
+    const user = await operations.findByField("username", username, "users");
 
     // verifica se o usuario existe
     if(user.length === 0) {
@@ -85,7 +85,7 @@ const login = async(req,res) => {
 // busca todos os usuarios
 const getUsers = async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await operations.findAll("users");
     // busca realizada com sucesso
     res.status(200).json(users);
 
@@ -101,7 +101,7 @@ const getUserById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const user = await User.findById(id);
+    const user = await operations.findById(id, "users");
     if (user.length === 0) {
       res.status(404).json({ errors: ["Usuário não encontrado!"] });
       return;
@@ -121,7 +121,7 @@ const updateUser = async (req, res) => {
   const { name, password, group } = req.body;
   
   // procura se id do usuario existe
-  const user = await User.findById(id);
+  const user = await operations.findById(id, "users");
   if (user.length === 0) {
     res.status(404).json({ errors: ["Usuário não encontrado!"] });
     return;
@@ -145,10 +145,11 @@ const updateUser = async (req, res) => {
     return;
   };
 
+  editUser.id = id;
   editUser.updated_at = currentTime();
   
   try {
-    User.update(editUser, id);
+    operations.update(editUser, "users");
 
     // usuario atualizado com sucesso
     res.status(201).json({editUser, message: "Usuário atualizado com sucesso!" });
@@ -165,14 +166,14 @@ const deleteUser = async (req, res) => {
   const { id } = req.params;
 
   // procura se id do usuario existe
-  const user = await User.findById(id);
+  const user = await operations.findById(id, "users");
   if (user.length === 0) {
     res.status(404).json({ errors: ["Usuário não encontrado!"] });
     return;
   }
 
   try {
-    User.deleteItem(id);
+    operations.deleteItem(id, "users");
 
     // usuario deletado com sucesso
     res.status(201).json({message: "Usuário deletado com sucesso!" });
@@ -182,8 +183,6 @@ const deleteUser = async (req, res) => {
     console.log(error)
     return;
   }  
-
-
 };
 
 module.exports = {

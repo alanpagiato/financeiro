@@ -1,5 +1,6 @@
-const Account = require("../models/Account");
+const operations = require("../db/operations");
 const currentTime = require("../utils/CurrentTime");
+const Account = require("../models/Account");
 
 const insertAccount = async (req, res) => {
   const { name, agency, accountNumber, accountDigit, bank } = req.body;
@@ -14,9 +15,9 @@ const insertAccount = async (req, res) => {
     };
 
   try {
-    Account.insert(newAccount);
+    operations.insert(newAccount, "accounts");
 
-    // conta criada com sucesso
+    // criado com sucesso
     res.status(201).json({newAccount, message: "Conta criada com sucesso!"});
 
   } catch (error) {
@@ -29,7 +30,7 @@ const insertAccount = async (req, res) => {
 
 const getAccounts = async (req, res) => {
   try {
-    const accounts = await Account.findAll();
+    const accounts = await operations.findAll("accounts");
     // busca realizada com sucesso
     res.status(200).json(accounts);
 
@@ -44,8 +45,8 @@ const updateAccount = async (req, res) => {
   const { id } = req.params;
   const { name, agency, accountNumber, accountDigit, bank } = req.body;
   
-  // procura se id da conta existe
-  const account = await Account.findById(id);
+  // procura se id existe
+  const account = await operations.findById(id,"accounts");
   if (account.length === 0) {
     res.status(404).json({ errors: ["Conta não encontrada!"] });
     return;
@@ -66,10 +67,11 @@ const updateAccount = async (req, res) => {
     return;
   };
 
+  editAccount.id = id;
   editAccount.updated_at = currentTime();
 
   try {
-    Account.update(editAccount, id);
+    operations.update(editAccount, "accounts");
 
     // conta atualizada com sucesso
     res.status(201).json({editAccount, message: "Conta atualizada com sucesso!" });
@@ -86,16 +88,16 @@ const deleteAccount = async (req, res) => {
   const { id } = req.params;
 
   // procura se id da conta existe
-  const account = await Account.findById(id);
+  const account = await operations.findById(id,"accounts");
   if (account.length === 0) {
     res.status(404).json({ errors: ["Conta não encontrada!"] });
     return;
   }
 
   try {
-    Account.deleteItem(id);
+    operations.deleteItem(id,"accounts");
 
-    // conta deletada com sucesso
+    // deletado com sucesso
     res.status(201).json({message: "Conta deletada com sucesso!" });
 
   } catch (error) {

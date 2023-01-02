@@ -1,18 +1,19 @@
-const Origin = require("../models/Origin");
+const operations = require("../db/operations");
 const currentTime = require("../utils/CurrentTime");
+const Origin = require("../models/Origin");
 
 const insertOrigin = async (req, res) => {
   const { name } = req.body;
 
-  // Create new account
+  // criando array
   const newOrigin = {
         name,
     };
 
   try {
-    Origin.insert(newOrigin);
+    operations.insert(newOrigin, "origins");
 
-    // conta criada com sucesso
+    // criado com sucesso
     res.status(201).json({newOrigin, message: "Origem criada com sucesso!"});
 
   } catch (error) {
@@ -25,7 +26,7 @@ const insertOrigin = async (req, res) => {
 
 const getOrigins = async (req, res) => {
   try {
-    const origins = await Origin.findAll();
+    const origins = await operations.findAll("origins");
     // busca realizada com sucesso
     res.status(200).json(origins);
 
@@ -41,24 +42,25 @@ const updateOrigin = async (req, res) => {
   const { name } = req.body;
   
   // procura se id da conta existe
-  const origin = await Origin.findById(id);
+  const origin = await operations.findById(id, "origins");
   if (origin.length === 0) {
     res.status(404).json({ errors: ["Origem não encontrada!"] });
     return;
   }
 
-  // criando array da conta editada
+  // criando array
   const editOrigin = {};
 
   // prrenche apenas os campos com valor no array
   if (name) { editOrigin.name = name };
 
+  editOrigin.id = id;
   editOrigin.updated_at = currentTime()
 
   try {
-    Origin.update(editOrigin, id);
+    operations.update(editOrigin, "origins");
 
-    // conta atualizada com sucesso
+    // atualizado com sucesso
     res.status(201).json({editOrigin, message: "Origem atualizada com sucesso!" });
 
   } catch (error) {
@@ -73,16 +75,16 @@ const deleteOrigin = async (req, res) => {
   const { id } = req.params;
 
   // procura se id da conta existe
-  const origin = await Origin.findById(id);
+  const origin = await operations.findById(id, "origins");
   if (origin.length === 0) {
     res.status(404).json({ errors: ["Origem não encontrada!"] });
     return;
   }
 
   try {
-    Origin.deleteItem(id);
+    operations.deleteItem(id, "origins");
 
-    // conta deletada com sucesso
+    // deletado com sucesso
     res.status(201).json({message: "Origem deletada com sucesso!" });
 
   } catch (error) {

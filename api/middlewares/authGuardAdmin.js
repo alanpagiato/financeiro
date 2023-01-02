@@ -1,6 +1,6 @@
-const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const jwtSecret = process.env.JWT_SECRET;
+const operations = require("../db/operations");
 
 const authGuardAdmin = async (req,res,next) => {
 
@@ -15,7 +15,7 @@ const authGuardAdmin = async (req,res,next) => {
         
         const verified = jwt.verify(token, jwtSecret);
 
-        const user = await User.findById(verified.id);
+        const user = await operations.findById(verified.id, "users");
 
         if (user[0].group !== "admin"){
             res.status(401).json({errors:["Sem autorização !"]});

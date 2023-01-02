@@ -6,6 +6,6 @@ const knex = require('knex')({
       password : process.env.DB_PASS,
       database : process.env.DB_NAME
     }
-  });
+});
 
 module.exports = knex;

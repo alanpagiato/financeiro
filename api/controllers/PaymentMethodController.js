@@ -1,18 +1,19 @@
-const PaymentMethod = require("../models/PaymentMethod");
+const operations = require("../db/operations");
 const currentTime = require("../utils/CurrentTime");
+const PaymentMethod = require("../models/PaymentMethod");
 
 const insertPaymentMethod = async (req, res) => {
   const { description } = req.body;
 
-  // Create new account
+  // Ciando array
   const newPaymentMethod = {
         description,
     };
 
   try {
-    PaymentMethod.insert(newPaymentMethod);
+    operations.insert(newPaymentMethod, "paymentMethods");
 
-    // conta criada com sucesso
+    // criado com sucesso
     res.status(201).json({newPaymentMethod, message: "Forma de pagamento criada com sucesso!"});
 
   } catch (error) {
@@ -25,7 +26,7 @@ const insertPaymentMethod = async (req, res) => {
 
 const getPaymentMethods = async (req, res) => {
   try {
-    const paymentMethods = await PaymentMethod.findAll();
+    const paymentMethods = await operations.findAll("paymentMethods");
     // busca realizada com sucesso
     res.status(200).json(paymentMethods);
 
@@ -40,25 +41,26 @@ const updatePaymentMethod = async (req, res) => {
   const { id } = req.params;
   const { description } = req.body;
   
-  // procura se id da conta existe
-  const paymentMethod = await PaymentMethod.findById(id);
+  // procura se id existe
+  const paymentMethod = await operations.findById(id, "paymentMethods");
   if (paymentMethod.length === 0) {
     res.status(404).json({ errors: ["Forma de pagamento não encontrada!"] });
     return;
   }
 
-  // criando array da conta editada
+  // criando array
   const editPaymentMethod = {};
 
   // prrenche apenas os campos com valor no array
   if (description) { editPaymentMethod.description = description; };
   
+  editPaymentMethod.id = id;
   editPaymentMethod.updated_at = currentTime()
 
   try {
-    PaymentMethod.update(editPaymentMethod, id);
+    operations.update(editPaymentMethod, "paymentMethods");
 
-    // conta atualizada com sucesso
+    // atualizado com sucesso
     res.status(201).json({editPaymentMethod, message: "Forma de pagamento atualizada com sucesso!" });
 
   } catch (error) {
@@ -72,17 +74,17 @@ const updatePaymentMethod = async (req, res) => {
 const deletePaymentMethod = async (req, res) => {
   const { id } = req.params;
 
-  // procura se id da conta existe
-  const paymentMethod = await PaymentMethod.findById(id);
+  // procura se id  existe
+  const paymentMethod = await operations.findById(id, "paymentMethods");
   if (paymentMethod.length === 0) {
     res.status(404).json({ errors: ["Forma de pagamento não encontrada!"] });
     return;
   }
 
   try {
-    PaymentMethod.deleteItem(id);
+    operations.deleteItem(id, "paymentMethods");
 
-    // conta deletada com sucesso
+    // deletado com sucesso
     res.status(201).json({message: "Forma de pagamento deletada com sucesso!" });
 
   } catch (error) {

@@ -81,6 +81,13 @@ const destinyValidation = () => {
     ];
 };
 
+const chartAccountValidation = () => {
+    return [
+        body("description").
+        not().isEmpty().withMessage("A descrição é obrigatória !"),
+    ];
+};
+
 module.exports = {
     accountInsertValidation,
     accountUpdateValidation,
@@ -90,4 +97,5 @@ module.exports = {
     userUpdateValidation,
     originValidation,
     destinyValidation,
+    chartAccountValidation,
 };
